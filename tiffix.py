@@ -46,7 +46,10 @@ with Image.open(imgpath) as img:
         data = json.load(mfile)
         channels = data['Summary']['ChNames']
         for chnum, ch in enumerate(channels):
-            img_sc = correct_shade(imread(path), ref, darkref, ch)
+            try:
+                img_sc = correct_shade(imread(path), ref, darkref, ch)
+            except:
+                img_sc = img
     tiff.imsave(imgpath, img_sc.astype(np.float32))
 
 
