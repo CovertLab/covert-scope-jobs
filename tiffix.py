@@ -62,6 +62,10 @@ with TiffFile(imgpath) as tif:
         magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
     except:
         magnification = 20
+    try:
+        exposure = int(info['Exposure-ms'])
+    except:
+        exposure = -1
 
 # flatfielding
 refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
@@ -75,6 +79,8 @@ except:
 
 with open(join(dirname(imgpath), 'metadata.txt')) as mfile:
     data = json.load(mfile)
+
+    # flatfielding
     channels = data['Summary']['ChNames']
     for chnum, ch in enumerate(channels):
         try:
@@ -82,3 +88,13 @@ with open(join(dirname(imgpath), 'metadata.txt')) as mfile:
         except:
             img+sc = tiff.imread(imgpath)
     tiff.imsave(imgpath, np.array(img_sc, np.float32))
+
+    # metadata dumping
+    if 'filedata' in data:
+        data['filedata'][imgpath] = {'binning' : binning, 
+                                 'magnification' : magnification, 
+                                 'exposure' : exposure}
+    else:
+        data ['filedata'] = {imgpath : {'binning' : binning, 
+                                        'magnification' : magnification, 
+                                        'exposure' : exposure}}
