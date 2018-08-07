@@ -4,6 +4,8 @@
 
 cat $RESEARCHNAS/instruments/covert-lab-scope1/logs/robocopy.log | sed 's/\r//' | sed 's/.*m://' | sed -n '/tif/p' | sed 's/\\/\//g' | sed -e 's/^/\/mnt\/covert-lab\/instruments\/covert-lab-scope1/' | sed -e 's/0%.*//' > tifffiles.txt
 
+mv $RESEARCHNAS/instruments/covert-lab-scope1/logs/robocopy.log $RESEARCHNAS/instruments/covert-lab-scope1/logs/robocopy_old.log
+
 
 fix () {
   local TIF=$1
