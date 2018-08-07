@@ -3,8 +3,8 @@
 import numpy as np
 from scipy.ndimage import imread
 from os.path import join
-from glob import glob                                                                             
-import ast                                                                             
+from glob import glob
+import ast
 import sys
 import os
 from os.path import join, dirname
@@ -14,13 +14,10 @@ from urllib.request import urlretrieve
 import tempfile
 import shutil
 
-sys.path.append('/home/adi/covert/CellTK')
-sys.path.append('/home/adi/covert/CellTK/celltk')
-sys.path.append('/home/adi/covert/CellTK/celltk/utils')
+# sys.path.append('/home/adi/covert/CellTK')
+# sys.path.append('/home/adi/covert/CellTK/celltk')
+# sys.path.append('/home/adi/covert/CellTK/celltk/utils')
 # from preprocess_operation import shading_correction
-
-from PIL import Image
-from PIL.TiffTags import TAGS
 import json
 
 
