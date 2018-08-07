@@ -39,6 +39,7 @@ def retrieve_ff_ref(refpath, darkrefpath):
         shutil.rmtree(temp_dir)  # delete directory
     return ref, darkref
 
+
 def correct_shade(img, ref, darkref, ch):
     img = img.astype(np.float)
     d0 = img.astype(np.float) - darkref[ch]
@@ -46,55 +47,61 @@ def correct_shade(img, ref, darkref, ch):
     return d1.mean() * d0/d1
 
 
-
-imgpath = sys.argv[1] # NOTE: assume full path e.g. /scratch/blah/blah/blah/image.tif
-
-
-# metadata extraction
-with TiffFile(imgpath) as tif:
-    md = tif.imagej_metadata
-    info = ast.literal_eval(md['Info'])
-    try:
-        binning = int(info['Neo-Binning']['PropVal'][0])
-    except:
-        binning = 3
-    try:
-        magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
-    except:
-        magnification = 20
-    try:
-        exposure = int(info['Exposure-ms'])
-    except:
-        exposure = -1
-
-# flatfielding
-refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
-darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
-try:
-    ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
-except:
-    refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(20, 3)
-    darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(20, 3)
-    ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
-
-with open(join(dirname(imgpath), 'metadata.txt')) as mfile:
-    data = json.load(mfile)
+def _main(imgpath):
+    # metadata extraction
+    with TiffFile(imgpath) as tif:
+        md = tif.imagej_metadata
+        info = ast.literal_eval(md['Info'])
+        try:
+            binning = int(info['Neo-Binning']['PropVal'][0])
+        except:
+            binning = 3
+        try:
+            magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
+        except:
+            magnification = 20
+        try:
+            exposure = int(info['Exposure-ms'])
+        except:
+            exposure = -1
 
     # flatfielding
-    channels = data['Summary']['ChNames']
-    for chnum, ch in enumerate(channels):
-        try:
-            img_sc = correct_shade(tiff.imread(imgpath), ref, darkref, ch)
-        except:
-            img+sc = tiff.imread(imgpath)
-    tiff.imsave(imgpath, np.array(img_sc, np.float32))
+    refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
+    darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
+    try:
+        ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
+    except:
+        # refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(20, 3)
+        # darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(20, 3)
+        # ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
+        ref, darkref = None, None
 
-    # metadata dumping
-    if 'filedata' in data:
-        data['filedata'][imgpath] = {'binning' : binning, 
-                                 'magnification' : magnification, 
-                                 'exposure' : exposure}
-    else:
-        data ['filedata'] = {imgpath : {'binning' : binning, 
-                                        'magnification' : magnification, 
-                                        'exposure' : exposure}}
+    with open(join(dirname(imgpath), 'metadata.txt')) as mfile:
+        data = json.load(mfile)
+
+        # flatfielding
+        channels = data['Summary']['ChNames']
+        for chnum, ch in enumerate(channels):
+            try:
+                if ref is not None:
+                    img_sc = correct_shade(tiff.imread(imgpath), ref, darkref, ch)
+                else:
+                    img_sc = tiff.imread(imgpath)
+            except:
+                img_sc = tiff.imread(imgpath)
+        tiff.imsave(imgpath, np.array(img_sc, np.float32))
+
+        # metadata dumping
+        if 'filedata' in data:
+            data['filedata'][imgpath] = {'binning' : binning, 
+                                    'magnification' : magnification, 
+                                    'exposure' : exposure}
+        else:
+            data['filedata'] = {imgpath : {'binning' : binning, 
+                                           'magnification' : magnification, 
+                                           'exposure' : exposure}}
+
+
+if __name__ == "__main__":
+    imgpath = sys.argv[1] # NOTE: assume full path e.g. /scratch/blah/blah/blah/image.tif
+    _main(imgpath)
