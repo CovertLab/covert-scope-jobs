@@ -5,7 +5,7 @@ DELAY=28800 # wait 8 hours between runs
 while true
 do
   START=$(date +%s)
-  bash robocop.sh
+  bash tifconvert.sh
   END=$(date +%s)
   DELTA=$(($END-$START))
   if [[ $DELTA -lt $DELAY ]]; then
