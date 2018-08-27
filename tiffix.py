@@ -1,11 +1,10 @@
 #!/usr/bin/python
 
 """
-currently, metadata is converted to a format that can't read out in ImageJ -> Show Info.
-Using Tifffile you can still read it.
-
-d1.mean() * d0/d1 is a bit arbitrary, which possibly causes an issue if saved in uint16.
-
+TODO: fix metadata so that it can be read out in ImageJ. 
+      Currently Tifffile can read it but not ImageJ.
+TODO: d1.mean() * d0/d1 is arbitrary, which possibly causes an issue if saved in uint16.
+TODO: collect more shading correction reference.
 """
 
 
