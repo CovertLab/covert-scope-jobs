@@ -30,7 +30,6 @@ import re
 import json
 
 
-
 ch_table = {('FITC', 'FITC'): 'FITC',
             ('mCherry', 'mCherry'): 'CHERRY',
             ('CFP', 'CFP'): 'CFP',
@@ -40,8 +39,7 @@ ch_table = {('FITC', 'FITC'): 'FITC',
             ('Far-Red', 'Far-Red'): 'FAR-RED',
             ('Orange', 'Orange'): 'Orange',
             ('Hoechst', 'DAPI'): 'AMCA',
-            ('CFP', 'YFP'): 'FRET',
-            }
+            ('CFP', 'YFP'): 'FRET'}
 
 
 def retrieve_ff_ref(refpath, darkrefpath):
@@ -65,7 +63,6 @@ def correct_shade(img, ref, darkref, ch):
     d0 = img.astype(np.float) - darkref[ch]
     d1 = ref[ch] - darkref[ch]
     return d1.mean() * d0/d1
-
 
 
 def run_correct_shade(tif, md):
@@ -92,8 +89,11 @@ def run_correct_shade(tif, md):
 
     img_sc = tif.asarray()
     if ref is not None:
-        img_sc = correct_shade(img_sc, ref, darkref, ch)
-        img_sc[img_sc < 0] = 0
+        try:
+            img_sc = correct_shade(img_sc, ref, darkref, ch)
+            img_sc[img_sc < 0] = 0
+        except:
+            pass  # channel is probably not existed in ref.
     return img_sc.astype(np.uint16), md
 
 
