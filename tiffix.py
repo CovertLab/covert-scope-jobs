@@ -73,8 +73,11 @@ def run_correct_shade(tif, md):
     excitation_label = info['Excitation Filter-Label']['PropVal']
 
     # flatfielding
-    refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
-    darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
+    # refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
+    # darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
+    refpath = 'data/ffref_{0}x{1}bin.npz'.format(magnification, binning)
+    darkrefpath = 'data/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
+
     try:
         ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
     except:
