@@ -72,9 +72,6 @@ def run_correct_shade(tif, md):
     exposure = int(info['Exposure-ms'])
     emission_label = info['Emission Filter-Label']['PropVal']
     excitation_label = info['Excitation Filter-Label']['PropVal']
-    emission_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", emission_label).groups(0)[0]
-    excitation_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", excitation_label).groups(0)[0]
-    ch = ch_table[emission_label, excitation_label]
 
     # flatfielding
     refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
@@ -84,11 +81,18 @@ def run_correct_shade(tif, md):
     except:
         ref, darkref = None, None
 
+    try:
+        emission_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", emission_label).groups(0)[0]
+        excitation_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", excitation_label).groups(0)[0]
+        ch = ch_table[excitation_label, emission_label]
+    except:
+        emission_label, excitation_label = None, None
+
     md['tk_info'] = info
     md['postprocess'] = 'shading_correction'
 
     img_sc = tif.asarray()
-    if ref is not None:
+    if ref is not None or emission_label is not None:
         try:
             img_sc = correct_shade(img_sc, ref, darkref, ch)
             img_sc[img_sc < 0] = 0

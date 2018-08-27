@@ -2,8 +2,6 @@
 
 RESEARCHNAS=~/covert-lab
 
-
-
 SCOPEDIR=$RESEARCHNAS/instruments/covert-lab-scope1
 ROBOCOPY=$SCOPEDIR/logs/robocopy.log
 cat $ROBOCOPY | sed 's/\r//' | sed 's/.*m://' | sed -n '/tif/p' | sed 's/\\/\//g' | cut -f5 | cut -d" " -f1 | sed -e 's@[a-Z]*:@'"$SCOPEDIR"'@g' > tifffiles.txt
@@ -13,15 +11,7 @@ fix () {
   local TIF=$1
   DIR="$(dirname "$TIF")"
   IN=$TIF
-  # FOL=${DIR:28}
-  # FILE="$(basename "$TIF")"
-  # PNG="${RESEARCHNAS}/instruments/${FOL}/${FILE}"
-  # IN=${RESEARCHNAS}/instruments/${FOL}/${FILE}
-
-  # echo $IN
   python tiffix.py $IN
-  # OUT="${PNG::-4}.png"
-  # convert $IN $OUT
 }
 
 while read TIF; do
