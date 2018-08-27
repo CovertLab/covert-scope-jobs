@@ -1,8 +1,8 @@
 # covert-scope-jobs
+Run tifconvert.sh.
+tiffix.py extracts metadata and performs shading correction on images.
 
-tiffix.py extracts metadata and performs shading correction on images  
+When you collect a new reference for shading correction, push it to `data/`.
 
-tifconvert.sh batch converts tiff files to png files and calls tiffix as a subroutine  
 
-run_pipeline.sh is a placeholder and does nothing  
 
