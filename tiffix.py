@@ -27,6 +27,21 @@ import re
 import json
 
 
+
+
+ch_table = {('FITC', 'FITC'): 'FITC',
+            ('mCherry', 'mCherry'): 'CHERRY',
+            ('CFP', 'CFP'): 'CFP',
+            ('YFP', 'YFP'): 'YFP',
+            ('DAPI', 'DAPI'): 'DAPI',
+            ('TRITC', 'TRITC'): 'TRITC',
+            ('Far-red', 'Far-red'): 'FAR-RED',
+            ('Orange', 'Orange'): 'Orange',
+            ('Hoechst', 'DAPI'): 'AMCA',
+            ('CFP', 'YFP'): 'FRET',
+            }
+
+
 def retrieve_ff_ref(refpath, darkrefpath):
     """
     refpath: 'http://archive.simtk.org/ktrprotocol/temp/ffref_20x3bin.npz'
@@ -50,14 +65,17 @@ def correct_shade(img, ref, darkref, ch):
     return d1.mean() * d0/d1
 
 
-
 def run_correct_shade(tif, md):
     info = ast.literal_eval(md['Info'])
     binning = int(info['Neo-Binning']['PropVal'][0])
     magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
     exposure = int(info['Exposure-ms'])
     emission_label = info['Emission Filter-Label']['PropVal']
-    ch =  re.search(r"\(([A-Za-z0-9_]+)\)", emission_label).groups(0)[0]
+    excitation_label = info['Excitation Filter-Label']['PropVal']
+    emission_label =  re.search(r"\(([A-Za-z0-9_]+)\)", emission_label).groups(0)[0]
+    excitation_label =  re.search(r"\(([A-Za-z0-9_]+)\)", excitation_label).groups(0)[0]
+    ch = ch_table[emission_label, excitation_label]
+
     # flatfielding
     refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
     darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
@@ -71,8 +89,11 @@ def run_correct_shade(tif, md):
 
     img_sc = tif.asarray()
     if ref is not None:
-        img_sc = correct_shade(img_sc, ref, darkref, ch)
-        img_sc[img_sc < 0] = 0
+        try:
+            img_sc = correct_shade(img_sc, ref, darkref, ch)
+            img_sc[img_sc < 0] = 0
+        except:
+            pass  # channel is probably not existed in ref.
     return img_sc.astype(np.uint16), md
 
 
