@@ -20,11 +20,28 @@ import os
 from os.path import join, dirname
 import tifffile as tiff
 from tifffile import TiffFile
-from urllib.request import urlretrieve
+try:
+    from urllib.request import urlretrieve
+except:
+    from urllib import urlretrieve
 import tempfile
 import shutil
 import re
 import json
+
+
+
+ch_table = {('FITC', 'FITC'): 'FITC',
+            ('mCherry', 'mCherry'): 'CHERRY',
+            ('CFP', 'CFP'): 'CFP',
+            ('YFP', 'YFP'): 'YFP',
+            ('DAPI', 'DAPI'): 'DAPI',
+            ('TRITC', 'TRITC'): 'TRITC',
+            ('Far-Red', 'Far-Red'): 'FAR-RED',
+            ('Orange', 'Orange'): 'Orange',
+            ('Hoechst', 'DAPI'): 'AMCA',
+            ('CFP', 'YFP'): 'FRET',
+            }
 
 
 def retrieve_ff_ref(refpath, darkrefpath):
@@ -57,7 +74,11 @@ def run_correct_shade(tif, md):
     magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
     exposure = int(info['Exposure-ms'])
     emission_label = info['Emission Filter-Label']['PropVal']
-    ch =  re.search(r"\(([A-Za-z0-9_]+)\)", emission_label).groups(0)[0]
+    excitation_label = info['Excitation Filter-Label']['PropVal']
+    emission_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", emission_label).groups(0)[0]
+    excitation_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", excitation_label).groups(0)[0]
+    ch = ch_table[emission_label, excitation_label]
+
     # flatfielding
     refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
     darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
