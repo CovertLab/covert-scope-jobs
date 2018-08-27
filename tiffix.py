@@ -1,5 +1,15 @@
 #!/usr/bin/python
 
+"""
+currently, metadata is converted to a format that can't read out in ImageJ -> Show Info.
+Using Tifffile you can still read it.
+
+d1.mean() * d0/d1 is a bit arbitrary, which possibly causes an issue if saved in uint16.
+
+"""
+
+
+
 import numpy as np
 from scipy.ndimage import imread
 from os.path import join
@@ -13,11 +23,7 @@ from tifffile import TiffFile
 from urllib.request import urlretrieve
 import tempfile
 import shutil
-
-# sys.path.append('/home/adi/covert/CellTK')
-# sys.path.append('/home/adi/covert/CellTK/celltk')
-# sys.path.append('/home/adi/covert/CellTK/celltk/utils')
-# from preprocess_operation import shading_correction
+import re
 import json
 
 
@@ -44,59 +50,43 @@ def correct_shade(img, ref, darkref, ch):
     return d1.mean() * d0/d1
 
 
-def _main(imgpath):
-    # metadata extraction
-    with TiffFile(imgpath) as tif:
-        md = tif.imagej_metadata
-        info = ast.literal_eval(md['Info'])
-        try:
-            binning = int(info['Neo-Binning']['PropVal'][0])
-        except:
-            binning = 3
-        try:
-            magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
-        except:
-            magnification = 20
-        try:
-            exposure = int(info['Exposure-ms'])
-        except:
-            exposure = -1
 
+def run_correct_shade(tif, md):
+    info = ast.literal_eval(md['Info'])
+    binning = int(info['Neo-Binning']['PropVal'][0])
+    magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
+    exposure = int(info['Exposure-ms'])
+    emission_label = info['Emission Filter-Label']['PropVal']
+    ch =  re.search(r"\(([A-Za-z0-9_]+)\)", emission_label).groups(0)[0]
     # flatfielding
     refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
     darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
     try:
         ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
     except:
-        # refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(20, 3)
-        # darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(20, 3)
-        # ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
         ref, darkref = None, None
 
-    with open(join(dirname(imgpath), 'metadata.txt')) as mfile:
-        data = json.load(mfile)
+    md['tk_info'] = info
+    md['postprocess'] = 'shading_correction'
 
-        # flatfielding
-        channels = data['Summary']['ChNames']
-        for chnum, ch in enumerate(channels):
-            try:
-                if ref is not None:
-                    img_sc = correct_shade(tiff.imread(imgpath), ref, darkref, ch)
-                else:
-                    img_sc = tiff.imread(imgpath)
-            except:
-                img_sc = tiff.imread(imgpath)
-        tiff.imsave(imgpath, np.array(img_sc, np.float32))
+    img_sc = tif.asarray()
+    if ref is not None:
+        img_sc = correct_shade(img_sc, ref, darkref, ch)
+        img_sc[img_sc < 0] = 0
+    return img_sc.astype(np.uint16), md
 
-        # metadata dumping
-        if 'filedata' in data:
-            data['filedata'][imgpath] = {'binning' : binning, 
-                                    'magnification' : magnification, 
-                                    'exposure' : exposure}
-        else:
-            data['filedata'] = {imgpath : {'binning' : binning, 
-                                           'magnification' : magnification, 
-                                           'exposure' : exposure}}
+
+def _main(imgpath):
+    with TiffFile(imgpath) as tif:
+        md = tif.imagej_metadata
+        img_sc = tif.asarray()
+        if "Info" in md:
+            img_sc, md = run_correct_shade(tif, md)
+        elif 'postprocess' in md:
+            if md['postprocess'] == 'shading_correction':
+                return
+        tiff.imsave(imgpath, img_sc, imagej=True,
+                    metadata=md, compress=9)
 
 
 if __name__ == "__main__":
