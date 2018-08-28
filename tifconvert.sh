@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RESEARCHNAS=~/covert-lab
+RESEARCHNAS=~/resnas
 
 SCOPEDIR=$RESEARCHNAS/instruments/covert-lab-scope1
 ROBOCOPY=$SCOPEDIR/logs/robocopy.log
@@ -11,7 +11,7 @@ fix () {
   local TIF=$1
   DIR="$(dirname "$TIF")"
   IN=$TIF
-  python tiffix.py $IN
+  ~/.pyenv/shims/python tiffix.py $IN  # explicitly use pyenv python for a cron job
 }
 
 while read TIF; do

@@ -67,7 +67,7 @@ def correct_shade(img, ref, darkref, ch):
 def run_correct_shade(tif, md):
     info = ast.literal_eval(md['Info'])
     binning = int(info['Neo-Binning']['PropVal'][0])
-    magnification = int(info['TINosePiece-Label']['PropVal'][11:13])
+    magnification = int(re.search("([0-9]*)x.*", info['TINosePiece-Label']['PropVal']).groups(0)[0])
     exposure = int(info['Exposure-ms'])
     emission_label = info['Emission Filter-Label']['PropVal']
     excitation_label = info['Excitation Filter-Label']['PropVal']
