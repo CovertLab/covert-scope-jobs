@@ -16,7 +16,16 @@ Each image in tifffiles.txt goes through `tiffix.py` for the following process.
 - tif compression.
 
 
+#### To change schedule for tifconvert.sh (not uploading)
+```
+crontab -e
+0 */2 * * * cd ~/covert-scope-jobs/ && git pull && sh tifconvert.sh
+```
+
+
+
 #### TODO: 
+- connect to researchNAS with a new account that has `modify` permission in instruments folder
 - truncate to the odd size image to even size.
 - make metadata compatible with imageJ `Show Info`
 - logs for tifconvert.sh
