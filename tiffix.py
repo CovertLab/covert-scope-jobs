@@ -105,7 +105,7 @@ def run_correct_shade(tif, md):
     return img_sc.astype(np.uint16), md
 
 
-def _main(imgpath):
+def call_process(imgpath):
     with TiffFile(imgpath) as tif:
         md = tif.imagej_metadata
         img_sc = tif.asarray()
@@ -116,6 +116,14 @@ def _main(imgpath):
                 return
         tiff.imsave(imgpath, img_sc, imagej=True,
                     metadata=md, compress=9)
+
+
+def _main(imgpath):
+    try:
+        call_process(imgpath)
+    except:
+        with open('error.txt', 'a') as f:
+            f.write(imgpath)
 
 
 def chunks(l, n):
@@ -134,5 +142,5 @@ if __name__ == "__main__":
 
     split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
     pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
-    pool.map(single_call, split_lists, chunksize=1)
+    pool.map(_main, split_lists, chunksize=1)
     pool.close()
