@@ -118,12 +118,13 @@ def call_process(imgpath):
                     metadata=md, compress=9)
 
 
-def _main(imgpath):
-    try:
-        call_process(imgpath)
-    except:
-        with open('error.txt', 'a') as f:
-            f.write(imgpath)
+def _main(imgpath_list):
+    for imgpath in imgpath_list:
+        try:
+            call_process(imgpath)
+        except:
+            with open('error.txt', 'a') as f:
+                f.write(imgpath)
 
 
 def chunks(l, n):
