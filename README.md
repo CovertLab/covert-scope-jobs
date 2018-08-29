@@ -22,11 +22,15 @@ crontab -e
 0 */2 * * * cd ~/covert-scope-jobs/ && git pull && sh tifconvert.sh
 ```
 
+#### Considerations
+`mount` command seems to be a lot faster than using `Connect to Server`.  
+However, when you use `mount`, ResearchNAS does not allow you to write files without `sudo` privilage.   
+Use `sudo visudo` to exclude sh script from asking password.
 
 
 #### TODO: 
 - connect to researchNAS with a new account that has `modify` permission in instruments folder
-- truncate to the odd size image to even size.
+- truncate the odd size image to even size.
 - make metadata compatible with imageJ `Show Info`
 - logs for tifconvert.sh
 - collect more shading correction references.
