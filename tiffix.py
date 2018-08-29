@@ -27,6 +27,8 @@ import tempfile
 import shutil
 import re
 import json
+import multiprocessing
+import math
 
 
 ch_table = {('FITC', 'FITC'): 'FITC',
@@ -116,8 +118,21 @@ def _main(imgpath):
                     metadata=md, compress=9)
 
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
 if __name__ == "__main__":
     tiffile = sys.argv[1] # NOTE: assume full path e.g. /scratch/blah/blah/blah/image.tif
     with open(tiffile) as f:
-        for line in f:
-            _main(line.strip())
+        content = f.readlines()
+    content = [x.strip() for x in content]
+
+    num_cores = 7
+
+    split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
+    pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
+    pool.map(single_call, split_lists, chunksize=1)
+    pool.close()
