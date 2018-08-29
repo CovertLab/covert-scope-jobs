@@ -120,4 +120,4 @@ if __name__ == "__main__":
     tiffile = sys.argv[1] # NOTE: assume full path e.g. /scratch/blah/blah/blah/image.tif
     with open(tiffile) as f:
         for line in f:
-            _main(line)
+            _main(line.strip())
