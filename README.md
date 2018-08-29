@@ -29,6 +29,7 @@ Use `sudo visudo` to exclude sh script from asking password.
 
 
 #### TODO: 
+- parallel processing
 - fix sudo issue
 - connect to researchNAS with a new account that has `modify` permission in instruments folder
 - truncate the odd size image to even size.
