@@ -117,5 +117,7 @@ def _main(imgpath):
 
 
 if __name__ == "__main__":
-    imgpath = sys.argv[1] # NOTE: assume full path e.g. /scratch/blah/blah/blah/image.tif
-    _main(imgpath)
+    tiffile = sys.argv[1] # NOTE: assume full path e.g. /scratch/blah/blah/blah/image.tif
+    with open(tiffile) as f:
+        for line in f:
+            _main(line)
