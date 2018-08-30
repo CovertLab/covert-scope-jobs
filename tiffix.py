@@ -42,9 +42,6 @@ ch_table = {('FITC', 'FITC'): 'FITC',
             ('Hoechst', 'DAPI'): 'AMCA',
             ('CFP', 'YFP'): 'FRET'}
 
-reffile = np.load('data/ref.npz')
-darkreffile = np.load('data/darkref.npz')
-
 
 def retrieve_ff_ref(refpath, darkrefpath):
     """
@@ -62,16 +59,14 @@ def retrieve_ff_ref(refpath, darkrefpath):
     return ref, darkref
 
 
-def correct_shade(img, magnification, binning, ch):
-    ref = reffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
-    darkref = darkreffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
+def correct_shade(img, ref, darkref):
     img = img.astype(np.float)
     d0 = img.astype(np.float) - darkref
     d1 = ref - darkref
     return d1.mean() * d0/d1
 
 
-def run_correct_shade(tif, md):
+def run_correct_shade(tif, md, reffile, darkreffile):
     info = ast.literal_eval(md['Info'])
     binning = int(info['Neo-Binning']['PropVal'][0])
     magnification = int(re.search("([0-9]*)x.*", info['TINosePiece-Label']['PropVal']).groups(0)[0])
@@ -92,19 +87,21 @@ def run_correct_shade(tif, md):
     img_sc = tif.asarray()
     if ref is not None or emission_label is not None:
         try:
-            img_sc = correct_shade(img_sc, magnification, binning, ch)
+            ref = reffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
+            darkref = darkreffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
+            img_sc = correct_shade(img_sc, ref, darkref)
             img_sc[img_sc < 0] = 0
         except:
             pass  # channel is probably not existed in ref.
     return img_sc.astype(np.uint16), md
 
 
-def call_process(imgpath):
+def call_process(imgpath, reffile, darkreffile):
     with TiffFile(imgpath) as tif:
         md = tif.imagej_metadata
         img_sc = tif.asarray()
         if "Info" in md:
-            img_sc, md = run_correct_shade(tif, md)
+            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile)
         elif 'postprocess' in md:
             if md['postprocess'] == 'shading_correction':
                 return
@@ -113,9 +110,11 @@ def call_process(imgpath):
 
 
 def _main(imgpath_list):
+    reffile = np.load('data/ref.npz')
+    darkreffile = np.load('data/darkref.npz')
     for imgpath in imgpath_list:
         try:
-            call_process(imgpath)
+            call_process(imgpath, reffile, darkreffile)
         except:
             with open('error.txt', 'a') as f:
                 f.write(imgpath)
