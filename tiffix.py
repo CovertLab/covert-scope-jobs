@@ -42,6 +42,9 @@ ch_table = {('FITC', 'FITC'): 'FITC',
             ('Hoechst', 'DAPI'): 'AMCA',
             ('CFP', 'YFP'): 'FRET'}
 
+reffile = np.load('data/ref.npz')
+darkreffile = np.load('data/darkref.npz')
+
 
 def retrieve_ff_ref(refpath, darkrefpath):
     """
@@ -59,10 +62,12 @@ def retrieve_ff_ref(refpath, darkrefpath):
     return ref, darkref
 
 
-def correct_shade(img, ref, darkref, ch):
+def correct_shade(img, magnification, binning, ch):
+    ref = reffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
+    darkref = darkreffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
     img = img.astype(np.float)
-    d0 = img.astype(np.float) - darkref[ch]
-    d1 = ref[ch] - darkref[ch]
+    d0 = img.astype(np.float) - darkref
+    d1 = ref - darkref
     return d1.mean() * d0/d1
 
 
@@ -73,17 +78,6 @@ def run_correct_shade(tif, md):
     exposure = int(info['Exposure-ms'])
     emission_label = info['Emission Filter-Label']['PropVal']
     excitation_label = info['Excitation Filter-Label']['PropVal']
-
-    # flatfielding
-    # refpath = 'http://archive.simtk.org/ktrprotocol/temp/ffref_{0}x{1}bin.npz'.format(magnification, binning)
-    # darkrefpath = 'http://archive.simtk.org/ktrprotocol/temp/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
-    refpath = 'data/ffref_{0}x{1}bin.npz'.format(magnification, binning)
-    darkrefpath = 'data/ffdarkref_{0}x{1}bin.npz'.format(magnification, binning)
-
-    try:
-        ref, darkref = retrieve_ff_ref(refpath, darkrefpath)
-    except:
-        ref, darkref = None, None
 
     try:
         emission_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", emission_label).groups(0)[0]
@@ -98,7 +92,7 @@ def run_correct_shade(tif, md):
     img_sc = tif.asarray()
     if ref is not None or emission_label is not None:
         try:
-            img_sc = correct_shade(img_sc, ref, darkref, ch)
+            img_sc = correct_shade(img_sc, magnification, binning, ch)
             img_sc[img_sc < 0] = 0
         except:
             pass  # channel is probably not existed in ref.
