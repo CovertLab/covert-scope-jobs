@@ -43,6 +43,10 @@ ch_table = {('FITC', 'FITC'): 'FITC',
             ('CFP', 'YFP'): 'FRET'}
 
 
+reffile = dict(np.load('data/ref.npz'))
+darkreffile = dict(np.load('data/darkref.npz'))
+
+
 def retrieve_ff_ref(refpath, darkrefpath):
     """
     refpath: 'http://archive.simtk.org/ktrprotocol/temp/ffref_20x3bin.npz'
@@ -108,15 +112,10 @@ def call_process(imgpath, reffile, darkreffile):
         tiff.imsave(imgpath, img_sc, imagej=True,
                     metadata=md, compress=9)
 
-reffile = dict(np.load('data/ref.npz'))
-darkreffile = dict(np.load('data/darkref.npz'))
 
 def _main(imgpath_list):
-    #import time
-    #time.sleep(np.random.randint(10))
     r0 = reffile.copy()
     r1 = darkreffile.copy()
-    #call_process(imgpath_list[0], r0, r1)
     for imgpath in imgpath_list:
         try:
             call_process(imgpath, r0, r1)
