@@ -85,7 +85,7 @@ def run_correct_shade(tif, md, reffile, darkreffile):
     md['postprocess'] = 'shading_correction'
 
     img_sc = tif.asarray()
-    if ref is not None or emission_label is not None:
+    if emission_label is not None:
         try:
             ref = reffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
             darkref = darkreffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
@@ -108,16 +108,21 @@ def call_process(imgpath, reffile, darkreffile):
         tiff.imsave(imgpath, img_sc, imagej=True,
                     metadata=md, compress=9)
 
+reffile = dict(np.load('data/ref.npz'))
+darkreffile = dict(np.load('data/darkref.npz'))
 
 def _main(imgpath_list):
-    reffile = np.load('data/ref.npz')
-    darkreffile = np.load('data/darkref.npz')
+    #import time
+    #time.sleep(np.random.randint(10))
+    r0 = reffile.copy()
+    r1 = darkreffile.copy()
+    #call_process(imgpath_list[0], r0, r1)
     for imgpath in imgpath_list:
         try:
-            call_process(imgpath, reffile, darkreffile)
+            call_process(imgpath, r0, r1)
         except:
             with open('error.txt', 'a') as f:
-                f.write(imgpath)
+                f.write(imgpath+'\n')
 
 
 def chunks(l, n):
@@ -138,3 +143,4 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
     pool.map(_main, split_lists, chunksize=1)
     pool.close()
+    #_main(split_lists[1])
