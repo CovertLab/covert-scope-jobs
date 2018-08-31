@@ -137,10 +137,16 @@ if __name__ == "__main__":
         content = f.readlines()
     content = [x.strip() for x in content]
 
-    num_cores = 7
+    import time
 
+    start = time.time()
+
+    num_cores = 7
     split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
     pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
     pool.map(_main, split_lists, chunksize=1)
     pool.close()
-    #_main(split_lists[1])
+
+    end = time.time()
+    print end - start, len(content)
+   #_main(split_lists[1])
