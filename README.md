@@ -29,12 +29,12 @@ Use `sudo visudo` to exclude sh script from asking password.
 
 
 #### TODO: 
-- parallel processing
-- fix sudo issue
+- ~~parallel processing~~
+- ~~fix sudo issue~~
 - connect to researchNAS with a new account that has `modify` permission in instruments folder
 - truncate the odd size image to even size.
 - make metadata compatible with imageJ `Show Info`
-- logs for tifconvert.sh
+- ~~logs for tifconvert.sh~~
 - collect more shading correction references.
 - write a function for estimating the reference from 1x1 binning image if 2-4 binning does not exist (imresize?)
 - (extract time points?)

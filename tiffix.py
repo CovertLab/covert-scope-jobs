@@ -119,6 +119,9 @@ def _main(imgpath_list):
     for imgpath in imgpath_list:
         try:
             call_process(imgpath, r0, r1)
+        except IOError:
+            with open('corrupted.txt', 'a') as f:
+                f.write(imgpath+'\n')
         except:
             with open('error.txt', 'a') as f:
                 f.write(imgpath+'\n')
@@ -139,13 +142,18 @@ if __name__ == "__main__":
     import time
 
     start = time.time()
-
+    
     num_cores = 7
-    split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
-    pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
-    pool.map(_main, split_lists, chunksize=1)
-    pool.close()
+
+
+    if len(content) > num_cores:
+        split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
+        pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
+        pool.map(_main, split_lists, chunksize=1)
+        pool.close()
+    else:
+        _main(content)
 
     end = time.time()
     print end - start, len(content)
-   #_main(split_lists[1])
+    #_main(split_lists[1])

@@ -13,7 +13,7 @@ if [ ! -f tifffiles.txt ]; then
   mv tifffiles.txt tifffiles_old.txt
 fi
 
-while read line; do
-rm $line
-done < corrupted.txt
+#while read line; do
+#rm $line
+#done < corrupted.txt
 
