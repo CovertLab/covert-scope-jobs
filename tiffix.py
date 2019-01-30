@@ -16,7 +16,7 @@ from glob import glob
 import ast
 import sys
 import os
-from os.path import join, dirname
+from os.path import join, dirname, abspath
 import tifffile as tiff
 from tifffile import TiffFile
 try:
@@ -43,8 +43,8 @@ ch_table = {('FITC', 'FITC'): 'FITC',
             ('CFP', 'YFP'): 'FRET'}
 
 
-reffile = dict(np.load('data/ref.npz'))
-darkreffile = dict(np.load('data/darkref.npz'))
+reffile = dict(np.load(join(dirname(abspath(__file__)), 'data/ref.npz')))
+darkreffile = dict(np.load(join(dirname(abspath(__file__)), 'data/darkref.npz')))
 
 
 def retrieve_ff_ref(refpath, darkrefpath):
@@ -144,8 +144,6 @@ if __name__ == "__main__":
     start = time.time()
     
     num_cores = 7
-
-
     if len(content) > num_cores:
         split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
         pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
