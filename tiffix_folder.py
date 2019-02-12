@@ -1,8 +1,10 @@
 from __future__ import division
-from tiffix import _main
+from tiffix import _main, chunks
 from os.path import join
 import os
 import sys
+import multiprocessing
+import math
 
 def call_tiffix(inputfolder, binning=3, magnification=20):
     """
