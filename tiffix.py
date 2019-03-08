@@ -95,6 +95,7 @@ def run_correct_shade(tif, md, reffile, darkreffile):
             darkref = darkreffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
             img_sc = correct_shade(img_sc, ref, darkref)
             img_sc[img_sc < 0] = 0
+            img_sc[img_sc > 65535] = 65535
         except:
             pass  # channel is probably not existed in ref.
     return img_sc.astype(np.uint16), md
