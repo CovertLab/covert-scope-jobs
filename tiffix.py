@@ -72,11 +72,18 @@ def correct_shade(img, ref, darkref):
 
 def run_correct_shade(tif, md, reffile, darkreffile):
     info = ast.literal_eval(md['Info'])
-    binning = int(info['Neo-Binning']['PropVal'][0])
-    magnification = int(re.search("([0-9]*)x.*", info['TINosePiece-Label']['PropVal']).groups(0)[0])
-    exposure = int(info['Exposure-ms'])
-    emission_label = info['Emission Filter-Label']['PropVal']
-    excitation_label = info['Excitation Filter-Label']['PropVal']
+    try:
+        binning = int(info['Neo-Binning']['PropVal'][0])
+        magnification = int(re.search("([0-9]*)x.*", info['TINosePiece-Label']['PropVal']).groups(0)[0])
+        exposure = int(info['Exposure-ms'])
+        emission_label = info['Emission Filter-Label']['PropVal']
+        excitation_label = info['Excitation Filter-Label']['PropVal']
+    except:
+        binning = int(info['Neo-Binning'][0])
+        magnification = int(re.search("([0-9]*)x.*", info['TINosePiece-Label']).groups(0)[0])
+        exposure = int(info['Exposure-ms'])
+        emission_label = info['Emission Filter-Label']
+        excitation_label = info['Excitation Filter-Label']
 
     try:
         emission_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", emission_label).groups(0)[0]
