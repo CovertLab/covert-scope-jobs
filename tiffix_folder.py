@@ -20,7 +20,7 @@ def call_process(imgpath, reffile, darkreffile):
         md = tif.imagej_metadata
         img_sc = tif.asarray()
         if "Info" in md:
-            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile)
+            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile, imgpath)
             return img_sc, md
         elif 'postprocess' in md:
             if md['postprocess'] == 'shading_correction':
