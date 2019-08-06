@@ -92,9 +92,6 @@ def run_correct_shade(tif, md, reffile, darkreffile):
     except:
         emission_label, excitation_label = None, None
 
-    md['tk_info'] = info
-    md['postprocess'] = 'shading_correction'
-
     img_sc = tif.asarray()
     if emission_label is not None:
         try:
@@ -103,6 +100,10 @@ def run_correct_shade(tif, md, reffile, darkreffile):
             img_sc = correct_shade(img_sc, ref, darkref)
             img_sc[img_sc < 0] = 0
             img_sc[img_sc > 65535] = 65535
+
+            md['tk_info'] = info
+            md['postprocess'] = 'shading_correction'
+            
         except:
             pass  # channel is probably not existed in ref.
     return img_sc.astype(np.uint16), md
