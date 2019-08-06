@@ -43,8 +43,13 @@ def _fix(set_arg):
         outputdir = _gen_outputdir(parentfolder, outputfolder, dirname)
         try:
             img, md = call_process(join(dirname, imgpath), r0, r1)
-            tiff.imsave(join(outputdir, imgpath), img.astype(np.uint16),
+
+            if 'postprocess' in md:
+                tiff.imsave(join(outputdir, imgpath), img.astype(np.uint16),
                         imagej=True, metadata=md, compress=9)
+            else:
+                pass # no shading correction done, so don't save image. Should be saved in missing_channel.txt
+
         except IOError:
             with open('corrupted.txt', 'a') as f:
                 f.write(join(dirname, imgpath) + '\n')
