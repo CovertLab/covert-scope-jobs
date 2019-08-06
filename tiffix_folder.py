@@ -24,6 +24,8 @@ def call_process(imgpath, reffile, darkreffile):
             return img_sc, md
         elif 'postprocess' in md:
             if md['postprocess'] == 'shading_correction':
+                with open('skipped.txt', 'a') as f:
+                    f.write(imgpath + '\n')
                 return img_sc, md
 
 
@@ -45,10 +47,10 @@ def _fix(set_arg):
                         imagej=True, metadata=md, compress=9)
         except IOError:
             with open('corrupted.txt', 'a') as f:
-                f.write(imgpath+'\n')
+                f.write(join(dirname, imgpath) + '\n')
         except:
             with open('error.txt', 'a') as f:
-                f.write(imgpath+'\n')
+                f.write(join(dirname, imgpath) + '\n')
 
 
 def call_tiffix(inputfolder, outputfolder, binning=3, magnification=20, num_cores=1):
