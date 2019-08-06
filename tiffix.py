@@ -70,7 +70,7 @@ def correct_shade(img, ref, darkref):
     return d1.mean() * d0/d1
 
 
-def run_correct_shade(tif, md, reffile, darkreffile):
+def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
     info = ast.literal_eval(md['Info'])
     try:
         binning = int(info['Neo-Binning']['PropVal'][0])
@@ -103,9 +103,13 @@ def run_correct_shade(tif, md, reffile, darkreffile):
 
             md['tk_info'] = info
             md['postprocess'] = 'shading_correction'
-            
+
         except:
-            pass  # channel is probably not existed in ref.
+            with open('missing_channel.txt', 'a') as f:
+                f.write('{0}:{1} - {2} \n'.format(excitation_label, emission_label, imgpath))
+    else:
+        with open('missing_channel.txt', 'a') as f:
+                f.write('{0}:{1} - {2} \n'.format(excitation_label, emission_label, imgpath))
     return img_sc.astype(np.uint16), md
 
 
@@ -114,7 +118,7 @@ def call_process(imgpath, reffile, darkreffile):
         md = tif.imagej_metadata
         img_sc = tif.asarray()
         if "Info" in md:
-            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile)
+            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile, imgpath)
         elif 'postprocess' in md:
             if md['postprocess'] == 'shading_correction':
                 return
