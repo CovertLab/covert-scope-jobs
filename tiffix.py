@@ -38,9 +38,9 @@ ch_table = {('FITC', 'FITC'): 'FITC',
             ('DAPI', 'DAPI'): 'DAPI',
             ('TRITC', 'TRITC'): 'TRITC',
             ('Far-Red', 'Far-Red'): 'FAR-RED',
-            ('Orange', 'Orange'): 'Orange',
+            ('Orange', 'Orange'): 'ORANGE',
             ('Hoechst', 'DAPI'): 'AMCA',
-            ('CFP', 'YFP'): 'FRET'}
+            ('CFP', 'YFP'): 'FRETCFPYFP'}
 
 
 reffile = dict(np.load(join(dirname(abspath(__file__)), 'data/ref.npz')))
