@@ -78,7 +78,7 @@ def call_tiffix(inputfolder, outputfolder, binning=3, magnification=20, num_core
     print "{0} tif files found...".format(len(content))
     print "processing with {0} cores".format(num_cores)
 
-    if len(content) > num_cores:
+    if (len(content) > num_cores) and (num_cores > 1):
         split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
         pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
         pool.map(_fix, split_lists, chunksize=1)
