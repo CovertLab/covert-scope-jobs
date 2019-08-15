@@ -38,9 +38,9 @@ ch_table = {('FITC', 'FITC'): 'FITC',
             ('DAPI', 'DAPI'): 'DAPI',
             ('TRITC', 'TRITC'): 'TRITC',
             ('Far-Red', 'Far-Red'): 'FAR-RED',
-            ('Orange', 'Orange'): 'Orange',
+            ('Orange', 'Orange'): 'ORANGE',
             ('Hoechst', 'DAPI'): 'AMCA',
-            ('CFP', 'YFP'): 'FRET'}
+            ('CFP', 'YFP'): 'FRETCFPYFP'}
 
 
 reffile = dict(np.load(join(dirname(abspath(__file__)), 'data/ref.npz')))
@@ -70,7 +70,7 @@ def correct_shade(img, ref, darkref):
     return d1.mean() * d0/d1
 
 
-def run_correct_shade(tif, md, reffile, darkreffile):
+def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
     info = ast.literal_eval(md['Info'])
     try:
         binning = int(info['Neo-Binning']['PropVal'][0])
@@ -92,9 +92,6 @@ def run_correct_shade(tif, md, reffile, darkreffile):
     except:
         emission_label, excitation_label = None, None
 
-    md['tk_info'] = info
-    md['postprocess'] = 'shading_correction'
-
     img_sc = tif.asarray()
     if emission_label is not None:
         try:
@@ -103,8 +100,16 @@ def run_correct_shade(tif, md, reffile, darkreffile):
             img_sc = correct_shade(img_sc, ref, darkref)
             img_sc[img_sc < 0] = 0
             img_sc[img_sc > 65535] = 65535
+
+            md['tk_info'] = info
+            md['postprocess'] = 'shading_correction'
+
         except:
-            pass  # channel is probably not existed in ref.
+            with open('missing_channel.txt', 'a') as f:
+                f.write('{0}:{1} - {2} \n'.format(excitation_label, emission_label, imgpath))
+    else:
+        with open('missing_channel.txt', 'a') as f:
+                f.write('{0}:{1} - {2} \n'.format(excitation_label, emission_label, imgpath))
     return img_sc.astype(np.uint16), md
 
 
@@ -113,7 +118,7 @@ def call_process(imgpath, reffile, darkreffile):
         md = tif.imagej_metadata
         img_sc = tif.asarray()
         if "Info" in md:
-            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile)
+            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile, imgpath)
         elif 'postprocess' in md:
             if md['postprocess'] == 'shading_correction':
                 return

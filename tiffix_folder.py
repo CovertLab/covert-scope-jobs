@@ -20,10 +20,12 @@ def call_process(imgpath, reffile, darkreffile):
         md = tif.imagej_metadata
         img_sc = tif.asarray()
         if "Info" in md:
-            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile)
+            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile, imgpath)
             return img_sc, md
         elif 'postprocess' in md:
             if md['postprocess'] == 'shading_correction':
+                with open('skipped.txt', 'a') as f:
+                    f.write(imgpath + '\n')
                 return img_sc, md
 
 
@@ -41,14 +43,19 @@ def _fix(set_arg):
         outputdir = _gen_outputdir(parentfolder, outputfolder, dirname)
         try:
             img, md = call_process(join(dirname, imgpath), r0, r1)
-            tiff.imsave(join(outputdir, imgpath), img.astype(np.uint16),
+
+            if 'postprocess' in md:
+                tiff.imsave(join(outputdir, imgpath), img.astype(np.uint16),
                         imagej=True, metadata=md, compress=9)
+            else:
+                pass # no shading correction done, so don't save image. Should be saved in missing_channel.txt
+
         except IOError:
             with open('corrupted.txt', 'a') as f:
-                f.write(imgpath+'\n')
+                f.write(join(dirname, imgpath) + '\n')
         except:
             with open('error.txt', 'a') as f:
-                f.write(imgpath+'\n')
+                f.write(join(dirname, imgpath) + '\n')
 
 
 def call_tiffix(inputfolder, outputfolder, binning=3, magnification=20, num_cores=1):
@@ -71,7 +78,7 @@ def call_tiffix(inputfolder, outputfolder, binning=3, magnification=20, num_core
     print "{0} tif files found...".format(len(content))
     print "processing with {0} cores".format(num_cores)
 
-    if len(content) > num_cores:
+    if (len(content) > num_cores) and (num_cores > 1):
         split_lists = list(chunks(content, int(math.ceil(len(content)/num_cores))))
         pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
         pool.map(_fix, split_lists, chunksize=1)
