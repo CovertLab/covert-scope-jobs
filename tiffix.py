@@ -90,7 +90,18 @@ def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
         excitation_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", excitation_label).groups(0)[0]
         ch = ch_table[excitation_label, emission_label]
     except:
-        emission_label, excitation_label = None, None
+        if (emission_label == '8-Open') and (excitation_label == '8-Open'):
+            try:    
+                turret_label = info['Filter Turret-Label']['PropVal']
+            except:
+                turret_label = info['Filter Turret-Label']
+
+            if turret_label == '6-mOrange':
+                ch = 'ORANGE'
+            else:
+                emission_label, excitation_label = None, None
+        else:
+            emission_label, excitation_label = None, None
 
     img_sc = tif.asarray()
     if emission_label is not None:
