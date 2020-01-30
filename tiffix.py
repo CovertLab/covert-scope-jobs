@@ -117,10 +117,10 @@ def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
 
         except:
             with open('missing_channel.txt', 'a') as f:
-                f.write('{0}:{1} - {2} \n'.format(excitation_label, emission_label, imgpath))
+                f.write('{0}:{1}:{2}x:{3}x{3} - {4} \n'.format(excitation_label, emission_label, magnification, binning, imgpath))
     else:
         with open('missing_channel.txt', 'a') as f:
-                f.write('{0}:{1} - {2} \n'.format(excitation_label, emission_label, imgpath))
+                f.write('{0}:{1}:{2}x:{3}x{3} - {4} \n'.format(excitation_label, emission_label, magnification, binning, imgpath))
     return img_sc.astype(np.uint16), md
 
 
