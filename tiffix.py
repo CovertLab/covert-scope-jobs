@@ -84,7 +84,6 @@ def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
         exposure = int(info['Exposure-ms'])
         emission_label = info['Emission Filter-Label']
         excitation_label = info['Excitation Filter-Label']
-
     try:
         emission_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", emission_label).groups(0)[0]
         excitation_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", excitation_label).groups(0)[0]
@@ -116,12 +115,58 @@ def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
             md['postprocess'] = 'shading_correction'
 
         except:
+            import ipdb;ipdb.set_trace()
             with open('missing_channel.txt', 'a') as f:
                 f.write('{0}:{1}:{2}x:{3}x{3} - {4} \n'.format(excitation_label, emission_label, magnification, binning, imgpath))
     else:
         with open('missing_channel.txt', 'a') as f:
                 f.write('{0}:{1}:{2}x:{3}x{3} - {4} \n'.format(excitation_label, emission_label, magnification, binning, imgpath))
     return img_sc.astype(np.uint16), md
+
+
+
+def run_correct_shade_v2(tif, md, reffile, darkreffile, imgpath):
+    info = ast.literal_eval(md['Info'])
+    binning = int(info['Binning'])
+    magnification = int(re.search("([0-9]*)x.*", info['TINosePiece-Label']).groups()[0])
+    exposure = int(info['Exposure-ms'])
+    emission_label = info['Wheel-B-Label']
+    excitation_label = info['Wheel-A-Label']
+
+    try:
+        emission_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", emission_label).groups(0)[0]
+        excitation_label =  re.search(r"\(([A-Za-z0-9_-]+)\)", excitation_label).groups(0)[0]
+        ch = ch_table[excitation_label, emission_label]
+    except:
+        if (emission_label == '8-Open') and (excitation_label == '8-Open'):
+            turret_label = info['TILightPath-Label']
+            if turret_label == '6-mOrange':
+                ch = 'ORANGE'
+            else:
+                emission_label, excitation_label = None, None
+        else:
+            emission_label, excitation_label = None, None
+
+    img_sc = tif.asarray()
+    if emission_label is not None:
+        try:
+            ref = reffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
+            darkref = darkreffile['{0}x_{1}bin_{2}'.format(magnification, binning, ch)]
+            img_sc = correct_shade(img_sc, ref, darkref)
+            img_sc[img_sc < 0] = 0
+            img_sc[img_sc > 65535] = 65535
+
+            md['tk_info'] = info
+            md['postprocess'] = 'shading_correction'
+
+        except:
+            with open('missing_channel.txt', 'a') as f:
+                f.write('{0}:{1}:{2}x:{3}x{3} - {4} \n'.format(excitation_label, emission_label, magnification, binning, imgpath))
+    else:
+        with open('missing_channel.txt', 'a') as f:
+                f.write('{0}:{1}:{2}x:{3}x{3} - {4} \n'.format(excitation_label, emission_label, magnification, binning, imgpath))
+    return img_sc.astype(np.uint16), md
+
 
 
 def call_process(imgpath, reffile, darkreffile):
@@ -164,7 +209,6 @@ if __name__ == "__main__":
     content = [x.strip() for x in content]
 
     import time
-
     start = time.time()
     
     num_cores = 7

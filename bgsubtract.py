@@ -40,7 +40,7 @@ def call_subtract(imgpath, bgdict):
             print "already subtracted"
             return
         else:
-            img_sc = img_sc - bgdict[chnum]
+            img_sc = img_sc.astype(np.float32) - bgdict[chnum]
             md['bg_subtract'] = 'Done'
             tiff.imsave(imgpath, img_sc.astype(np.float32), imagej=True,
                         metadata=md, compress=9)
@@ -122,8 +122,9 @@ def calc_background(bgdirlist):
         r = re.compile('.*img_channel{0:03}'.format(c))
         pathlist = filter(r.match, content)
         if pathlist:
-            imlist = [tiff.imread(i) for i in pathlist]
-            ff = np.median(np.dstack(imlist), axis=2)
+            pathlist = np.random.choice(pathlist, 400).tolist()
+            imlist = [tiff.imread(i).astype(np.float32) for i in pathlist]
+            ff = np.min(np.dstack(imlist), axis=2)
             bgdict[c] = ff
             c += 1
         else:

@@ -1,5 +1,5 @@
 from __future__ import division
-from tiffix import _main, chunks, run_correct_shade
+from tiffix import _main, chunks, run_correct_shade, run_correct_shade_v2
 from os.path import join
 import os
 import sys
@@ -20,7 +20,10 @@ def call_process(imgpath, reffile, darkreffile):
         md = tif.imagej_metadata
         img_sc = tif.asarray()
         if "Info" in md:
-            img_sc, md = run_correct_shade(tif, md, reffile, darkreffile, imgpath)
+            try:
+                img_sc, md = run_correct_shade(tif, md, reffile, darkreffile, imgpath)
+            except:
+                img_sc, md = run_correct_shade_v2(tif, md, reffile, darkreffile, imgpath)
             return img_sc, md
         elif 'postprocess' in md:
             if md['postprocess'] == 'shading_correction':
