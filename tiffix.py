@@ -139,8 +139,7 @@ def run_correct_shade_v2(tif, md, reffile, darkreffile, imgpath):
         ch = ch_table[excitation_label, emission_label]
     except:
         if (emission_label == '8-Open') and (excitation_label == '8-Open'):
-            turret_label = info['TILightPath-Label']
-            if turret_label == '6-mOrange':
+            if info['TILightPath-Label'] == '6-mOrange' or info['TIFilterBlock1-Label'] == '6-mOrange':
                 ch = 'ORANGE'
             else:
                 emission_label, excitation_label = None, None
