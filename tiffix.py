@@ -66,12 +66,13 @@ def retrieve_ff_ref(refpath, darkrefpath):
 def correct_shade(img, ref, darkref):
     img = img.astype(np.float)
     d0 = img.astype(np.float) - darkref
-    d1 = ref - darkref
+    d1 = ref
     return d1.mean() * d0/d1
 
 
 def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
     info = ast.literal_eval(md['Info'])
+
     try:
         binning = int(info['Neo-Binning']['PropVal'][0])
         magnification = int(re.search("([0-9]*)x.*", info['TINosePiece-Label']['PropVal']).groups(0)[0])
@@ -101,7 +102,6 @@ def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
                 emission_label, excitation_label = None, None
         else:
             emission_label, excitation_label = None, None
-
     img_sc = tif.asarray()
     if emission_label is not None:
         try:
@@ -115,7 +115,6 @@ def run_correct_shade(tif, md, reffile, darkreffile, imgpath):
             md['postprocess'] = 'shading_correction'
 
         except:
-            import ipdb;ipdb.set_trace()
             with open('missing_channel.txt', 'a') as f:
                 f.write('{0}:{1}:{2}x:{3}x{3} - {4} \n'.format(excitation_label, emission_label, magnification, binning, imgpath))
     else:
